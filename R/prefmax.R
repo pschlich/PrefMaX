@@ -507,7 +507,6 @@ summary.prefmax_cluster <- function(object, ...) {
 #' @export
 #'
 #' @examples
-#' library(PrefMaX)
 #'
 #' path <- dirname(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
 #' file <- basename(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
