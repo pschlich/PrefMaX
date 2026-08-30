@@ -1,0 +1,18 @@
+Package: PrefMaX
+Title: Ideal Point Mapping and Consumer Segmentation for Sensory Data by the PrefMaX method
+Version: 1.0.0
+Authors@R: 
+    person("Pascal", "Schlich", email = "pascal.schlich@inrae.fr", role = c("aut", "cre"))
+Description: Implements the PrefMaX methodology for mapping ideal sensory points, 
+    clustering consumer preferences, and running automated key-in-hand reporting.
+License: GPL-3
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    cluster,
+    FactoMineR,
+    ggplot2,
+    ggrepel,
+    openxlsx,
+    readxl
