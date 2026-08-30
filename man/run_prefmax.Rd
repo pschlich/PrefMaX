@@ -13,9 +13,14 @@ run_prefmax(
   ncp = 2,
   nb.clust = NULL,
   scale_desc = 1,
-  title_standard = "PrefMaX Standard Biplot",
+  min_r2 = NULL,
+  label_consumers = NULL,
+  consumer_alpha = 0.6,
+  title_standard = "PrefMaX Biplot",
   title_cluster = "PrefMaX Clustered Biplot",
   res_dpi = 300,
+  plot_width = 12,
+  plot_height = 8.5,
   output_dir = getwd()
 )
 }
@@ -36,13 +41,23 @@ run_prefmax(
 
 \item{scale_desc}{Scaling factor for attribute arrows (default 1).}
 
+\item{min_r2}{Minimum R2 threshold for attribute vectors display (default NULL).}
+
+\item{label_consumers}{Logical. If NULL, auto-disabled when N > 100 consumers.}
+
+\item{consumer_alpha}{Alpha transparency for consumer points (default 0.6).}
+
 \item{title_standard}{Base title for standard biplot.}
 
 \item{title_cluster}{Base title for clustered biplot.}
 
 \item{res_dpi}{Resolution of saved TIFF images (default 300 DPI).}
 
-\item{output_dir}{Directory where output files (Excel and TIFF) will be saved. Default is current working directory \code{getwd()}. Set to \code{NULL} to disable file saving.}
+\item{plot_width}{Output TIFF plot width in inches (default 12).}
+
+\item{plot_height}{Output TIFF plot height in inches (default 8.5).}
+
+\item{output_dir}{Directory where output files will be saved. Default is current working directory \code{getwd()}.}
 }
 \value{
 An object of class \code{prefmax_pipeline}.
@@ -51,20 +66,19 @@ An object of class \code{prefmax_pipeline}.
 Key-in-hand pipeline for the PrefMaX method
 }
 \examples{
+\dontrun{
 library(PrefMaX)
 
 path <- dirname(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
 file <- basename(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
 
-res <- run_prefmax(
-  path = path,              # Directory containing the example Excel file
-  file = file,              # Name of the example Excel file
-  sheet_hedo = "Liking",    # Name of liking sheet
-  sheet_qda = "Sensory",    # Name of sensory sheet
-  scale.unit = FALSE,       # FALSE for PCA on covariance
-  scale_desc = 2,           # Multiply default attribute coordinates by 2
-  ncp = 2,                  # Clustering based on the two first PCs
-  nb.clust = NULL,          # NULL for automatic cluster detection
-  output_dir = getwd()      # Save generated files in current working directory
-)
+res <- run_prefmax(path = path,             # Pathname of the directory containing the Excel data file
+                  file = file,              # Name of the Excel file containing data into 2 sheets
+                  sheet_hedo = "Liking",    # Name of the data sheet containing the liking data"
+                  sheet_qda = "Sensory",    # Name of the data sheet containg the sensory data
+                  scale.unit= FALSE,        # FALSE for a PCA on covariance rather than correlation
+                  scale_desc = 2,           # Multiply default attribute coordinates by scale_desc
+                  ncp=2,                    # Clustering on ncp first components
+                  nb.clust = NULL)          # NULL for automatic detection of number of clusters or number of clusters (1 for no clustering)
+}
 }

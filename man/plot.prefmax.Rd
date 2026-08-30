@@ -9,10 +9,12 @@
   axes = c(1, 2),
   scale_desc = 1,
   cluster = NULL,
-  title = "PrefMaX",
+  title = "PrefMaX Biplot",
   label_size = 3.5,
+  min_r2 = NULL,
+  label_consumers = TRUE,
+  consumer_alpha = 0.6,
   max.overlaps = Inf,
-  step = NULL,
   ...
 )
 }
@@ -27,11 +29,15 @@
 
 \item{title}{Le titre du graphique.}
 
-\item{label_size}{Taille de la police pour les étiquettes.}
+\item{label_size}{Taille de la police pour les étiquettes (défaut 3.5).}
+
+\item{min_r2}{Seuil minimal de R2 pour afficher les flèches des descripteurs (NULL pour tous).}
+
+\item{label_consumers}{Logique. Si FALSE, n'affiche que les points consommateurs sans numéros.}
+
+\item{consumer_alpha}{Transparence des points consommateurs (défaut 0.6).}
 
 \item{max.overlaps}{Nombre maximal de chevauchements pour ggrepel (défaut Inf).}
-
-\item{step}{Espacement souhaité entre les lignes de la grille.}
 
 \item{...}{Arguments supplémentaires.}
 }
