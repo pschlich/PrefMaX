@@ -7,6 +7,7 @@
 run_prefmax(
   path,
   file,
+  ShortID = NULL,
   sheet_hedo = 1,
   sheet_qda = 2,
   scale.unit = FALSE,
@@ -28,6 +29,8 @@ run_prefmax(
 \item{path}{Directory containing the input Excel data file.}
 
 \item{file}{Excel file name.}
+
+\item{ShortID}{Identifier string for naming exported output files.}
 
 \item{sheet_hedo}{Sheet name or index for liking data (default 1).}
 

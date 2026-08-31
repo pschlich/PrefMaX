@@ -131,7 +131,6 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
   n_dims <- nrow(eig)
   eig$dim <- 1:n_dims
 
-  # Dynamic step determination for labels and X axis
   if (n_dims > 40) {
     step_k <- 3
   } else if (n_dims > 20) {
@@ -140,7 +139,6 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
     step_k <- 1
   }
 
-  # Selective text labeling (show on dimension 1 and multiples of step_k)
   eig$label_bar <- ifelse((eig$dim == 1 | eig$dim %% step_k == 0),
                           paste0(round(eig$Variance_Pct, 1), "%"), "")
 
@@ -151,25 +149,20 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
   scale_factor <- max_var / 100
 
   p <- ggplot2::ggplot(eig, ggplot2::aes(x = dim)) +
-    # Barres de variance
     ggplot2::geom_col(ggplot2::aes(y = Variance_Pct),
                       fill = "steelblue", color = "black", alpha = 0.7, width = 0.6) +
-    # Ligne et points cumulés
     ggplot2::geom_line(ggplot2::aes(y = Cumulative_Pct * scale_factor),
                        color = "firebrick", linewidth = 1) +
     ggplot2::geom_point(ggplot2::aes(y = Cumulative_Pct * scale_factor),
                         color = "firebrick", size = 2.5) +
-    # Textes filtrés sur barres et courbe
     ggplot2::geom_text(ggplot2::aes(y = Variance_Pct, label = label_bar),
                        vjust = -0.5, size = 3, fontface = "bold", color = "steelblue") +
     ggplot2::geom_text(ggplot2::aes(y = Cumulative_Pct * scale_factor, label = label_cum),
                        vjust = -0.8, size = 2.8, fontface = "bold", color = "firebrick") +
-    # Ajustement dynamique des graduations de l'axe X
     ggplot2::scale_x_continuous(
       breaks = c(1, seq(step_k, n_dims, by = step_k)),
       expand = ggplot2::expansion(mult = c(0.02, 0.02))
     ) +
-    # Axes Y
     ggplot2::scale_y_continuous(
       name = "% of Variance",
       limits = c(0, max_var * 1.18),
@@ -231,7 +224,6 @@ plot.prefmax <- function(x, axes = c(1, 2),
   ax2 <- axes[2]
   pca_res <- x$pca
 
-  # 1. Coordonnées des consommateurs
   cons_coords <- as.data.frame(pca_res$ind$coord[, c(ax1, ax2)])
   colnames(cons_coords) <- c("Dim1", "Dim2")
   cons_coords$Label <- rownames(cons_coords)
@@ -245,14 +237,10 @@ plot.prefmax <- function(x, axes = c(1, 2),
     cons_coords$Type <- "Consumers"
   }
 
-  # 2. Coordonnées et R2 des descripteurs (variables actives sur Xopt)
   raw_coords <- pca_res$var$coord[, c(ax1, ax2)]
   cos2_m <- pca_res$var$cos2
-
-  # R2 théorique exact dans le plan (somme des cos2)
   r2_values <- cos2_m[, ax1] + cos2_m[, ax2]
 
-  # Gestion du facteur d'échelle (Automatique si non renseigné ou égal à 1)
   if (is.null(scale_desc) || scale_desc == 1) {
     max_ind <- max(abs(c(cons_coords$Dim1, cons_coords$Dim2)), na.rm = TRUE)
     max_var <- max(abs(raw_coords), na.rm = TRUE)
@@ -264,14 +252,12 @@ plot.prefmax <- function(x, axes = c(1, 2),
     scale_factor <- scale_desc
   }
 
-  # Application du facteur d'échelle
   desc_coords <- as.data.frame(raw_coords * scale_factor)
   colnames(desc_coords) <- c("Dim1", "Dim2")
   desc_coords$Label <- rownames(desc_coords)
   desc_coords$Type <- "Attributes"
   desc_coords$R2 <- r2_values[rownames(desc_coords)]
 
-  # Filtrage strict par R2 et calcul du nombre d'exclus pour la footnote
   n_total_desc <- nrow(desc_coords)
   caption_text <- NULL
 
@@ -286,7 +272,6 @@ plot.prefmax <- function(x, axes = c(1, 2),
     }
   }
 
-  # 3. Coordonnées des produits
   center_xopt <- pca_res$call$centre
   X_centered <- scale(x$X, center = center_xopt, scale = FALSE)
   V <- pca_res$svd$V[, c(ax1, ax2)]
@@ -295,21 +280,36 @@ plot.prefmax <- function(x, axes = c(1, 2),
   prod_coords$Label <- rownames(prod_coords)
   prod_coords$Type <- "Products"
 
-  # Pourcentage de variance expliquée
   eig <- pca_res$eig
   var_ax1 <- round(eig[ax1, 2], 1)
   var_ax2 <- round(eig[ax2, 2], 1)
 
-  # Définition des couleurs
+  # --- Gestion des couleurs et des étiquettes de légende ---
   if (!is.null(cluster)) {
     k <- cluster$nb.clust
     clust_colors <- hcl(h = seq(15, 375, length = k + 1), l = 45, c = 100)[1:k]
-    names(clust_colors) <- paste0("Cluster_", 1:k)
+    clust_names <- paste0("Cluster_", 1:k)
+    names(clust_colors) <- clust_names
+
+    # Décompte réel des effectifs par cluster
+    counts <- table(cluster$clusters)
+
+    # Création des labels au format (n=valeur) Nom_Cluster
+    clust_labels <- sapply(clust_names, function(cn) {
+      n_val <- ifelse(cn %in% names(counts), as.numeric(counts[cn]), 0)
+      paste0("(n=", n_val, ") ", cn)
+    })
 
     color_palette <- c(
       "Products"   = "red",
       "Attributes" = "forestgreen",
       clust_colors
+    )
+
+    legend_labels <- c(
+      "Products"   = "Products",
+      "Attributes" = "Attributes",
+      clust_labels
     )
   } else {
     color_palette <- c(
@@ -317,33 +317,27 @@ plot.prefmax <- function(x, axes = c(1, 2),
       "Consumers"  = "steelblue",
       "Attributes" = "forestgreen"
     )
+    legend_labels <- NULL
   }
 
-  # 1. Calcul des limites exactes propres à chaque axe (avec 5% de marge)
   all_x <- c(cons_coords$Dim1, desc_coords$Dim1, prod_coords$Dim1)
   all_y <- c(cons_coords$Dim2, desc_coords$Dim2, prod_coords$Dim2)
 
   xlim_val <- c(min(all_x, na.rm = TRUE), max(all_x, na.rm = TRUE)) * 1.05
   ylim_val <- c(min(all_y, na.rm = TRUE), max(all_y, na.rm = TRUE)) * 1.05
 
-  # 2. Pas d'incrément fixe et régulier (toutes les 25 unités)
   step_unit <- 25
 
-  # 3. Initialisation du graphique ggplot
   p <- ggplot2::ggplot() +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
-    # Consommateurs (Points)
     ggplot2::geom_point(data = cons_coords, ggplot2::aes(x = Dim1, y = Dim2, color = Type),
                         alpha = consumer_alpha, size = 2) +
-    # Descripteurs (Flèches)
     ggplot2::geom_segment(data = desc_coords, ggplot2::aes(x = 0, y = 0, xend = Dim1, yend = Dim2, color = Type),
                           arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")), linewidth = 0.7) +
-    # Produits (Triangles rouges)
     ggplot2::geom_point(data = prod_coords, ggplot2::aes(x = Dim1, y = Dim2, color = Type),
                         size = 4, shape = 17)
 
-  # Ajout des étiquettes (ggrepel)
   if (requireNamespace("ggrepel", quietly = TRUE)) {
     p <- p + ggrepel::geom_text_repel(
       data = prod_coords,
@@ -384,9 +378,9 @@ plot.prefmax <- function(x, axes = c(1, 2),
     }
   }
 
-  # Habillage final avec cadrage ajusté et grilles carrées
   p <- p +
-    ggplot2::scale_color_manual(values = color_palette, name = NULL) +
+    ggplot2::scale_color_manual(values = color_palette, labels = legend_labels, name = NULL) +
+    ggplot2::guides(color = ggplot2::guide_legend(nrow = 1, byrow = TRUE)) +
     ggplot2::coord_fixed(ratio = 1, xlim = xlim_val, ylim = ylim_val) +
     ggplot2::scale_x_continuous(breaks = seq(-200, 200, by = step_unit)) +
     ggplot2::scale_y_continuous(breaks = seq(-200, 200, by = step_unit)) +
@@ -400,6 +394,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
     ggplot2::theme(
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14),
       legend.position = "bottom",
+      legend.box = "horizontal",
       plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9, color = "gray30"),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_rect(color = "gray80", fill = NA, linewidth = 0.5),
@@ -444,6 +439,7 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
   if (is.null(nb.clust)) {
     sil_scores <- numeric(max.clust - 1)
     for (k in 2:max.clust) {
+      set.seed(123)
       km_test <- kmeans(coords, centers = k, nstart = 25)
       sil <- cluster::silhouette(km_test$cluster, dist(coords))
       sil_scores[k - 1] <- mean(sil[, 3])
@@ -454,7 +450,32 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
     sil_df <- data.frame(
       Clusters = 2:max.clust,
       Average_Silhouette = round(sil_scores, 4),
-      Selected = ifelse(2:max.clust == nb.clust, "YES", "")
+      Selected = ifelse(2:max.clust == nb.clust, "YES", ""),
+      stringsAsFactors = FALSE
+    )
+
+    # Ajout de la phrase explicative en fin de tableau
+    footer_row <- data.frame(
+      Clusters = paste0("Clustering performed on ", ncp_used, " dimensions with ", nb.clust, " clusters."),
+      Average_Silhouette = "",
+      Selected = "",
+      stringsAsFactors = FALSE
+    )
+    sil_df$Clusters <- as.character(sil_df$Clusters)
+    sil_df <- rbind(sil_df, footer_row)
+
+  } else {
+    # Si nb.clust est imposé par l'utilisateur, on calcule tout de même l'index global pour la feuille
+    set.seed(123)
+    km_test <- kmeans(coords, centers = nb.clust, nstart = 25)
+    sil <- cluster::silhouette(km_test$cluster, dist(coords))
+    avg_sil <- mean(sil[, 3])
+
+    sil_df <- data.frame(
+      Clusters = as.character(nb.clust),
+      Average_Silhouette = round(avg_sil, 4),
+      Selected = "YES (User Defined)",
+      stringsAsFactors = FALSE
     )
   }
 
@@ -464,7 +485,6 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
   clusters <- factor(km_res$cluster, labels = paste0("Cluster_", 1:nb.clust))
   names(clusters) <- rownames(coords)
 
-  # Calcul des valeurs de silhouette individuelles s(i)
   sil_res <- cluster::silhouette(km_res$cluster, dist(coords))
   sil_values <- sil_res[, 3]
   names(sil_values) <- rownames(coords)
@@ -529,10 +549,8 @@ summary.prefmax_cluster <- function(object, ...) {
   q        <- ncol(xopt_mat)
   desc_names <- colnames(xopt_mat)
 
-  # Calcul des effectifs par cluster
   counts <- table(clusters)
 
-  # Construction des entêtes de colonnes avec les effectifs n
   cluster_cols <- paste0("Cluster_", 1:nb_clust)
   cluster_cols_labels <- paste0("Cluster_", 1:nb_clust, " (n = ", as.numeric(counts[cluster_cols]), ")")
 
@@ -597,6 +615,7 @@ summary.prefmax_cluster <- function(object, ...) {
 #'
 #' @param path Directory containing the input Excel data file.
 #' @param file Excel file name.
+#' @param ShortID Identifier string for naming exported output files.
 #' @param sheet_hedo Sheet name or index for liking data (default 1).
 #' @param sheet_qda Sheet name or index for QDA data (default 2).
 #' @param scale.unit Logical. If TRUE, standardized PCA. If FALSE (default), unstandardized PCA.
@@ -617,6 +636,7 @@ summary.prefmax_cluster <- function(object, ...) {
 #' @export
 run_prefmax <- function(path,
                         file,
+                        ShortID = NULL,
                         sheet_hedo = 1,
                         sheet_qda = 2,
                         scale.unit = FALSE,
@@ -649,8 +669,14 @@ run_prefmax <- function(path,
   if (!file.exists(full_file_path)) {
     stop("Excel file '", file, "' not found in directory: ", path)
   }
+  # --- Gestion automatique de ShortID si non spécifié ---
+  if (is.null(ShortID) || nchar(trimws(ShortID)) == 0) {
+    base_name <- sub("\\.(xlsx|xls)$", "", file, ignore.case = TRUE)
+    ShortID <- substr(base_name, 1, 8)
+  }
 
   message("--> Loading Excel data...")
+
   Y_df <- readxl::read_excel(full_file_path, sheet = sheet_hedo)
   X_df <- readxl::read_excel(full_file_path, sheet = sheet_qda)
 
@@ -676,6 +702,7 @@ run_prefmax <- function(path,
   cat("\n=======================================================\n")
   cat("               DATA VERIFICATION SUMMARY               \n")
   cat("=======================================================\n")
+  cat("• Dataset ID   : ", ShortID, "\n", sep = "")
   cat("• Products     (", n_products, ") : ", paste(prod_names, collapse = ", "), "\n", sep = "")
   cat("• Consumers    (", n_consumers, ")\n", sep = "")
   cat("• Attributes   (", n_attributes, ") : ", paste(attr_names, collapse = ", "), "\n", sep = "")
@@ -690,15 +717,16 @@ run_prefmax <- function(path,
   print(p_scree)
 
   if (!is.null(output_dir)) {
-    ggplot2::ggsave(filename = file.path(output_dir, "prefmax_screeplot.tiff"), plot = p_scree, device = "tiff",
+    scree_out_name <- paste0(ShortID, "_PrefMaX_Screeplot_ncp=", ncp, ".tiff")
+    ggplot2::ggsave(filename = file.path(output_dir, scree_out_name), plot = p_scree, device = "tiff",
                     width = 8, height = 5, units = "in", dpi = res_dpi, compression = "lzw", bg = "white")
   }
 
   wb <- openxlsx::createWorkbook()
 
   df_data_verif <- data.frame(
-    Parametre = c("Repertoire (PATH)", "Fichier source", "Nombre de Produits (N)", "Nombre de Consommateurs (P)", "Nombre de Descripteurs (Q)", "Type ACP", "Dimensions (ncp)"),
-    Valeur = c(path, file, n_products, n_consumers, n_attributes,
+    Parametre = c("ShortID", "Repertoire (PATH)", "Fichier source", "Nombre de Produits (N)", "Nombre de Consommateurs (P)", "Nombre de Descripteurs (Q)", "Type ACP", "Dimensions (ncp)"),
+    Valeur = c(ShortID, path, file, n_products, n_consumers, n_attributes,
                ifelse(scale.unit, "Standardisee (scale.unit = TRUE)", "Non standardisee (scale.unit = FALSE)"),
                ncp),
     stringsAsFactors = FALSE
@@ -714,8 +742,8 @@ run_prefmax <- function(path,
 
   openxlsx::addWorksheet(wb, "Data_Verification")
   openxlsx::writeData(wb, "Data_Verification", df_data_verif, startRow = 1, startCol = 1)
-  openxlsx::writeData(wb, "Data_Verification", "Domaine de variation des descripteurs (Min / Max) :", startRow = 10, startCol = 1)
-  openxlsx::writeData(wb, "Data_Verification", res_pref$bounds, startRow = 11, startCol = 1, rowNames = TRUE)
+  openxlsx::writeData(wb, "Data_Verification", "Domaine de variation des descripteurs (Min / Max) :", startRow = 11, startCol = 1)
+  openxlsx::writeData(wb, "Data_Verification", res_pref$bounds, startRow = 12, startCol = 1, rowNames = TRUE)
 
   openxlsx::addWorksheet(wb, "Eigenvalues")
   openxlsx::writeData(wb, "Eigenvalues", df_eigenvalues, rowNames = TRUE)
@@ -736,14 +764,16 @@ run_prefmax <- function(path,
     message("--> Option nb.clust = 1 detected: Global analysis without clustering.")
     res_clust <- NULL
     table_res <- NULL
+    actual_nb_clus <- 1
 
     if (!is.null(output_dir)) {
-      excel_out_name <- paste0("prefmax_global_results_", format(Sys.Date(), "%Y%m%d"), ".xlsx")
+      excel_out_name <- paste0(ShortID, "_PrefMaX_Results_ncp=", ncp, "_nb.clus=1.xlsx")
       openxlsx::saveWorkbook(wb, file = file.path(output_dir, excel_out_name), overwrite = TRUE)
     }
   } else {
     message("--> Performing consumer clustering on ", ncp, " dimensions...")
     res_clust <- prefmax_cluster(res_pref, ncp = ncp, nb.clust = nb.clust)
+    actual_nb_clus <- res_clust$nb.clust
 
     clust_counts <- table(res_clust$clusters)
     counts_str <- paste(paste0(names(clust_counts), ": n = ", as.numeric(clust_counts)), collapse = " | ")
@@ -753,13 +783,7 @@ run_prefmax <- function(path,
     table_res <- summary(res_clust)
 
     df_silhouette <- res_clust$silhouette_table
-    if (is.null(df_silhouette)) {
-      df_silhouette <- data.frame(
-        Note = paste0("Clustering performed with user-defined K = ", res_clust$nb.clust, " on ", ncp, " dimensions")
-      )
-    }
 
-    # Création du data.frame avec la colonne 'Silhouette index'
     df_consumers <- data.frame(
       Consumer = colnames(Y),
       Cluster = as.character(res_clust$clusters[colnames(Y)]),
@@ -768,7 +792,6 @@ run_prefmax <- function(path,
       check.names = FALSE
     )
 
-    # Tri par Cluster (croissant) puis Silhouette index (décroissant)
     df_consumers <- df_consumers[order(df_consumers$Cluster, -df_consumers$`Silhouette index`), ]
 
     openxlsx::addWorksheet(wb, "Silhouette_Scores")
@@ -781,7 +804,7 @@ run_prefmax <- function(path,
     openxlsx::writeData(wb, "Cluster_Characterization", table_res)
 
     if (!is.null(output_dir)) {
-      excel_out_name <- paste0("prefmax_cluster_results_", format(Sys.Date(), "%Y%m%d"), ".xlsx")
+      excel_out_name <- paste0(ShortID, "_PrefMaX_Results_ncp=", ncp, "_nb.clus=", actual_nb_clus, ".xlsx")
       openxlsx::saveWorkbook(wb, file = file.path(output_dir, excel_out_name), overwrite = TRUE)
     }
   }
@@ -799,20 +822,20 @@ run_prefmax <- function(path,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
 
       plots_standard_list[[pair_name]] <- p_biplot
-      file_prefix <- "prefmax_biplot_standard_"
     } else {
       t_title <- paste0(title_cluster, " (Axes ", i, "-", i + 1, ")")
       p_biplot <- plot(res_pref, axes = ax_pair, cluster = res_clust, scale_desc = scale_desc, title = t_title,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
 
       plots_cluster_list[[pair_name]] <- p_biplot
-      file_prefix <- "prefmax_biplot_clusters_"
     }
 
     print(p_biplot)
 
     if (!is.null(output_dir)) {
-      file_out <- paste0(file_prefix, "axes_", i, "_", i + 1, ".tiff")
+      # Format exact demandé : ShortID_PrefMaX_Biplot_dim1_dim2_ncp=ncp value_nb.clus=nb_clus value.tiff
+      file_out <- paste0(ShortID, "_PrefMaX_Biplot_dim", i, "_dim", i + 1,
+                         "_ncp=", ncp, "_nb.clus=", actual_nb_clus, ".tiff")
       ggplot2::ggsave(filename = file.path(output_dir, file_out), plot = p_biplot, device = "tiff",
                       width = plot_width, height = plot_height, units = "in", dpi = res_dpi, compression = "lzw", bg = "white")
     }
