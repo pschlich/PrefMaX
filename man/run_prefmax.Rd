@@ -65,20 +65,3 @@ An object of class \code{prefmax_pipeline}.
 \description{
 Key-in-hand pipeline for the PrefMaX method
 }
-\examples{
-\dontrun{
-library(PrefMaX)
-
-path <- dirname(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
-file <- basename(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
-
-res <- run_prefmax(path = path,             # Pathname of the directory containing the Excel data file
-                  file = file,              # Name of the Excel file containing data into 2 sheets
-                  sheet_hedo = "Liking",    # Name of the data sheet containing the liking data"
-                  sheet_qda = "Sensory",    # Name of the data sheet containg the sensory data
-                  scale.unit= FALSE,        # FALSE for a PCA on covariance rather than correlation
-                  scale_desc = 2,           # Multiply default attribute coordinates by scale_desc
-                  ncp=2,                    # Clustering on ncp first components
-                  nb.clust = NULL)          # NULL for automatic detection of number of clusters or number of clusters (1 for no clustering)
-}
-}

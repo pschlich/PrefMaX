@@ -1,6 +1,6 @@
 Package: PrefMaX
 Title: Ideal Point Mapping and Consumer Segmentation for Sensory Data by the PrefMaX method
-Version: 1.1.0
+Version: 1.1.2
 Authors@R: 
     person("Pascal", "Schlich", email = "pascal.schlich@inrae.fr", role = c("aut", "cre"))
 Description: Implements the PrefMaX methodology for mapping ideal sensory points, 

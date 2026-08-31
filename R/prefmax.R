@@ -193,6 +193,10 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
   return(p)
 }
 
+# ==============================================================================
+# 3. Graphique Biplot de la méthode PrefMaX
+# ==============================================================================
+
 #' Représentation graphique Biplot de la méthode PrefMaX
 #'
 #' @param x Un objet de classe \code{prefmax}.
@@ -254,7 +258,6 @@ plot.prefmax <- function(x, axes = c(1, 2),
     max_var <- max(abs(raw_coords), na.rm = TRUE)
     scale_factor <- if (max_var > 0) (max_ind / max_var) * 0.75 else 1
 
-    # Message d'information dans la console
     message(sprintf("--> Facteur d'échelle 'scale_desc' calculé automatiquement (Axes %d-%d) : %.2f",
                     ax1, ax2, scale_factor))
   } else {
@@ -391,13 +394,13 @@ plot.prefmax <- function(x, axes = c(1, 2),
       title = title,
       x = paste0("Axis ", ax1, " (", var_ax1, " %)"),
       y = paste0("Axis ", ax2, " (", var_ax2, " %)"),
-      caption = caption_text   # <--- AJOUT DE LA FOOTNOTE
+      caption = caption_text
     ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14),
       legend.position = "bottom",
-      plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9, color = "gray30"), # Style de la footnote
+      plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9, color = "gray30"),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_rect(color = "gray80", fill = NA, linewidth = 0.5),
       plot.background = ggplot2::element_rect(fill = "white", color = NA),
@@ -425,6 +428,10 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
     stop("L'objet doit être de classe 'prefmax'.")
   }
 
+  if (!requireNamespace("cluster", quietly = TRUE)) {
+    stop("Le package 'cluster' est requis. Veuillez l'installer.")
+  }
+
   max_available_ncp <- ncol(x$pca$ind$coord)
   ncp_used <- min(ncp, max_available_ncp)
   coords <- x$pca$ind$coord[, 1:ncp_used, drop = FALSE]
@@ -435,10 +442,6 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
   sil_df <- NULL
 
   if (is.null(nb.clust)) {
-    if (!requireNamespace("cluster", quietly = TRUE)) {
-      stop("Le package 'cluster' est requis. Veuillez l'installer ou spécifier 'nb.clust'.")
-    }
-
     sil_scores <- numeric(max.clust - 1)
     for (k in 2:max.clust) {
       km_test <- kmeans(coords, centers = k, nstart = 25)
@@ -460,6 +463,11 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
 
   clusters <- factor(km_res$cluster, labels = paste0("Cluster_", 1:nb.clust))
   names(clusters) <- rownames(coords)
+
+  # Calcul des valeurs de silhouette individuelles s(i)
+  sil_res <- cluster::silhouette(km_res$cluster, dist(coords))
+  sil_values <- sil_res[, 3]
+  names(sil_values) <- rownames(coords)
 
   XOPT_mat <- x$XOPT
   R_mat <- x$R
@@ -485,6 +493,7 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
 
   res <- list(
     clusters = clusters,
+    sil_values = sil_values,
     nb.clust = nb.clust,
     ncp = ncp_used,
     centers = km_res$centers,
@@ -527,7 +536,6 @@ summary.prefmax_cluster <- function(object, ...) {
   cluster_cols <- paste0("Cluster_", 1:nb_clust)
   cluster_cols_labels <- paste0("Cluster_", 1:nb_clust, " (n = ", as.numeric(counts[cluster_cols]), ")")
 
-  # Création du data.frame sans conversion automatique des noms de colonnes
   res_df <- data.frame(
     Attribute = desc_names,
     F_stat = numeric(q),
@@ -536,7 +544,6 @@ summary.prefmax_cluster <- function(object, ...) {
     check.names = FALSE
   )
 
-  # Initialisation des colonnes de clusters
   for (col in cluster_cols_labels) {
     res_df[[col]] <- NA_real_
   }
@@ -581,6 +588,7 @@ summary.prefmax_cluster <- function(object, ...) {
   rownames(res_df) <- NULL
   return(res_df)
 }
+
 # ==============================================================================
 # 6. Pipeline globale run_prefmax
 # ==============================================================================
@@ -607,24 +615,6 @@ summary.prefmax_cluster <- function(object, ...) {
 #'
 #' @return An object of class \code{prefmax_pipeline}.
 #' @export
-#'
-#' @examples
-#' \dontrun{
-#' library(PrefMaX)
-#'
-#' path <- dirname(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
-#' file <- basename(system.file("extdata", "Muscadine Grape Juices Data for PrefMaX.xlsx", package = "PrefMaX"))
-#'
-#' res <- run_prefmax(path = path,             # Pathname of the directory containing the Excel data file
-#'                   file = file,              # Name of the Excel file containing data into 2 sheets
-#'                   sheet_hedo = "Liking",    # Name of the data sheet containing the liking data"
-#'                   sheet_qda = "Sensory",    # Name of the data sheet containg the sensory data
-#'                   scale.unit= FALSE,        # FALSE for a PCA on covariance rather than correlation
-#'                   scale_desc = 2,           # Multiply default attribute coordinates by scale_desc
-#'                   ncp=2,                    # Clustering on ncp first components
-#'                   nb.clust = NULL)          # NULL for automatic detection of number of clusters or number of clusters (1 for no clustering)
-#' }
-
 run_prefmax <- function(path,
                         file,
                         sheet_hedo = 1,
@@ -676,7 +666,6 @@ run_prefmax <- function(path,
   prod_names   <- rownames(X)
   attr_names   <- colnames(X)
 
-  # Auto-détection de la lisibilité des consommateurs
   if (is.null(label_consumers)) {
     label_consumers <- (n_consumers <= 100)
     if (!label_consumers) {
@@ -770,11 +759,17 @@ run_prefmax <- function(path,
       )
     }
 
+    # Création du data.frame avec la colonne 'Silhouette index'
     df_consumers <- data.frame(
       Consumer = colnames(Y),
-      Cluster = as.character(res_clust$clusters),
-      stringsAsFactors = FALSE
+      Cluster = as.character(res_clust$clusters[colnames(Y)]),
+      `Silhouette index` = round(as.numeric(res_clust$sil_values[colnames(Y)]), 4),
+      stringsAsFactors = FALSE,
+      check.names = FALSE
     )
+
+    # Tri par Cluster (croissant) puis Silhouette index (décroissant)
+    df_consumers <- df_consumers[order(df_consumers$Cluster, -df_consumers$`Silhouette index`), ]
 
     openxlsx::addWorksheet(wb, "Silhouette_Scores")
     openxlsx::writeData(wb, "Silhouette_Scores", df_silhouette)
@@ -792,14 +787,13 @@ run_prefmax <- function(path,
   }
 
   # ============================================================================
-  # Boucle UNIQUE pour la génération et la sauvegarde des Biplots
+  # Boucle pour la génération et la sauvegarde des Biplots
   # ============================================================================
   for (i in 1:(ncp - 1)) {
     ax_pair <- c(i, i + 1)
     pair_name <- paste0("axes_", i, "_", i + 1)
 
     if (is.null(res_clust)) {
-      # Mode standard (nb.clust = 1)
       t_title <- paste0(title_standard, " (Axes ", i, "-", i + 1, ")")
       p_biplot <- plot(res_pref, axes = ax_pair, scale_desc = scale_desc, title = t_title,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
@@ -807,7 +801,6 @@ run_prefmax <- function(path,
       plots_standard_list[[pair_name]] <- p_biplot
       file_prefix <- "prefmax_biplot_standard_"
     } else {
-      # Mode clustérisé
       t_title <- paste0(title_cluster, " (Axes ", i, "-", i + 1, ")")
       p_biplot <- plot(res_pref, axes = ax_pair, cluster = res_clust, scale_desc = scale_desc, title = t_title,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
@@ -816,10 +809,8 @@ run_prefmax <- function(path,
       file_prefix <- "prefmax_biplot_clusters_"
     }
 
-    # Affichage unique
     print(p_biplot)
 
-    # Sauvegarde TIFF unique
     if (!is.null(output_dir)) {
       file_out <- paste0(file_prefix, "axes_", i, "_", i + 1, ".tiff")
       ggplot2::ggsave(filename = file.path(output_dir, file_out), plot = p_biplot, device = "tiff",
