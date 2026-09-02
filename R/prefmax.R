@@ -206,6 +206,7 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
 #'
 #' @return Un objet \code{ggplot} représentant le biplot PrefMaX.
 #' @export
+
 plot.prefmax <- function(x, axes = c(1, 2),
                          scale_desc = 1,
                          cluster = NULL,
@@ -224,6 +225,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
   ax2 <- axes[2]
   pca_res <- x$pca
 
+  # --- 1. Coordonnées des consommateurs ---
   cons_coords <- as.data.frame(pca_res$ind$coord[, c(ax1, ax2)])
   colnames(cons_coords) <- c("Dim1", "Dim2")
   cons_coords$Label <- rownames(cons_coords)
@@ -237,6 +239,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
     cons_coords$Type <- "Consumers"
   }
 
+  # --- 2. Coordonnées des descripteurs ---
   raw_coords <- pca_res$var$coord[, c(ax1, ax2)]
   cos2_m <- pca_res$var$cos2
   r2_values <- cos2_m[, ax1] + cos2_m[, ax2]
@@ -272,6 +275,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
     }
   }
 
+  # --- 3. Coordonnées des produits ---
   center_xopt <- pca_res$call$centre
   X_centered <- scale(x$X, center = center_xopt, scale = FALSE)
   V <- pca_res$svd$V[, c(ax1, ax2)]
@@ -280,24 +284,23 @@ plot.prefmax <- function(x, axes = c(1, 2),
   prod_coords$Label <- rownames(prod_coords)
   prod_coords$Type <- "Products"
 
+  # --- 4. Pourcentage d'inertie ---
   eig <- pca_res$eig
   var_ax1 <- round(eig[ax1, 2], 1)
   var_ax2 <- round(eig[ax2, 2], 1)
 
-  # --- Gestion des couleurs et des étiquettes de légende ---
+  # --- 5. Palette de couleurs et légende ---
   if (!is.null(cluster)) {
     k <- cluster$nb.clust
     clust_colors <- hcl(h = seq(15, 375, length = k + 1), l = 45, c = 100)[1:k]
     clust_names <- paste0("Cluster_", 1:k)
     names(clust_colors) <- clust_names
 
-    # Décompte réel des effectifs par cluster
     counts <- table(cluster$clusters)
 
-    # Création des labels au format (n=valeur) Nom_Cluster
     clust_labels <- sapply(clust_names, function(cn) {
       n_val <- ifelse(cn %in% names(counts), as.numeric(counts[cn]), 0)
-      paste0("(n=", n_val, ") ", cn)
+      paste0(cn, " (n=", n_val, ")")
     })
 
     color_palette <- c(
@@ -320,14 +323,25 @@ plot.prefmax <- function(x, axes = c(1, 2),
     legend_labels <- NULL
   }
 
+  # --- 6. Cadrage strict au plus près des points (grille carrée, pas = 1) ---
   all_x <- c(cons_coords$Dim1, desc_coords$Dim1, prod_coords$Dim1)
   all_y <- c(cons_coords$Dim2, desc_coords$Dim2, prod_coords$Dim2)
 
-  xlim_val <- c(min(all_x, na.rm = TRUE), max(all_x, na.rm = TRUE)) * 1.05
-  ylim_val <- c(min(all_y, na.rm = TRUE), max(all_y, na.rm = TRUE)) * 1.05
+  grid_step <- 1
+  pad <- 0.15 # Marge minimale autour des points extrêmes
 
-  step_unit <- 25
+  x_min <- min(all_x, na.rm = TRUE) - pad
+  x_max <- max(all_x, na.rm = TRUE) + pad
+  y_min <- min(all_y, na.rm = TRUE) - pad
+  y_max <- max(all_y, na.rm = TRUE) + pad
 
+  axis_limits_x <- c(x_min, x_max)
+  axis_limits_y <- c(y_min, y_max)
+
+  breaks_x <- seq(floor(x_min), ceiling(x_max), by = grid_step)
+  breaks_y <- seq(floor(y_min), ceiling(y_max), by = grid_step)
+
+  # --- 7. Construction du graphique ---
   p <- ggplot2::ggplot() +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
@@ -381,9 +395,9 @@ plot.prefmax <- function(x, axes = c(1, 2),
   p <- p +
     ggplot2::scale_color_manual(values = color_palette, labels = legend_labels, name = NULL) +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = 1, byrow = TRUE)) +
-    ggplot2::coord_fixed(ratio = 1, xlim = xlim_val, ylim = ylim_val) +
-    ggplot2::scale_x_continuous(breaks = seq(-200, 200, by = step_unit)) +
-    ggplot2::scale_y_continuous(breaks = seq(-200, 200, by = step_unit)) +
+    ggplot2::coord_fixed(ratio = 1, xlim = axis_limits_x, ylim = axis_limits_y, expand = FALSE) +
+    ggplot2::scale_x_continuous(breaks = breaks_x) +
+    ggplot2::scale_y_continuous(breaks = breaks_y) +
     ggplot2::labs(
       title = title,
       x = paste0("Axis ", ax1, " (", var_ax1, " %)"),
@@ -396,6 +410,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
       legend.position = "bottom",
       legend.box = "horizontal",
       plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9, color = "gray30"),
+      panel.grid.major = ggplot2::element_line(color = "gray90", linewidth = 0.3),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_rect(color = "gray80", fill = NA, linewidth = 0.5),
       plot.background = ggplot2::element_rect(fill = "white", color = NA),
@@ -404,7 +419,6 @@ plot.prefmax <- function(x, axes = c(1, 2),
 
   return(p)
 }
-
 # ==============================================================================
 # 4. Classification des consommateurs dans l'espace PrefMaX
 # ==============================================================================
@@ -454,7 +468,6 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
       stringsAsFactors = FALSE
     )
 
-    # Ajout de la phrase explicative en fin de tableau
     footer_row <- data.frame(
       Clusters = paste0("Clustering performed on ", ncp_used, " dimensions with ", nb.clust, " clusters."),
       Average_Silhouette = "",
@@ -465,7 +478,6 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
     sil_df <- rbind(sil_df, footer_row)
 
   } else {
-    # Si nb.clust est imposé par l'utilisateur, on calcule tout de même l'index global pour la feuille
     set.seed(123)
     km_test <- kmeans(coords, centers = nb.clust, nstart = 25)
     sil <- cluster::silhouette(km_test$cluster, dist(coords))
@@ -669,7 +681,7 @@ run_prefmax <- function(path,
   if (!file.exists(full_file_path)) {
     stop("Excel file '", file, "' not found in directory: ", path)
   }
-  # --- Gestion automatique de ShortID si non spécifié ---
+
   if (is.null(ShortID) || nchar(trimws(ShortID)) == 0) {
     base_name <- sub("\\.(xlsx|xls)$", "", file, ignore.case = TRUE)
     ShortID <- substr(base_name, 1, 8)
@@ -757,9 +769,6 @@ run_prefmax <- function(path,
   plots_standard_list <- list()
   plots_cluster_list  <- list()
 
-  # ============================================================================
-  # Gestion des exports Excel et Calculs selon le mode
-  # ============================================================================
   if (!is.null(nb.clust) && nb.clust == 1) {
     message("--> Option nb.clust = 1 detected: Global analysis without clustering.")
     res_clust <- NULL
@@ -809,9 +818,6 @@ run_prefmax <- function(path,
     }
   }
 
-  # ============================================================================
-  # Boucle pour la génération et la sauvegarde des Biplots
-  # ============================================================================
   for (i in 1:(ncp - 1)) {
     ax_pair <- c(i, i + 1)
     pair_name <- paste0("axes_", i, "_", i + 1)
@@ -833,7 +839,6 @@ run_prefmax <- function(path,
     print(p_biplot)
 
     if (!is.null(output_dir)) {
-      # Format exact demandé : ShortID_PrefMaX_Biplot_dim1_dim2_ncp=ncp value_nb.clus=nb_clus value.tiff
       file_out <- paste0(ShortID, "_PrefMaX_Biplot_dim", i, "_dim", i + 1,
                          "_ncp=", ncp, "_nb.clus=", actual_nb_clus, ".tiff")
       ggplot2::ggsave(filename = file.path(output_dir, file_out), plot = p_biplot, device = "tiff",
