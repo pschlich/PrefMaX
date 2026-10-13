@@ -7,12 +7,12 @@
 \method{summary}{prefmax_cluster}(object, ...)
 }
 \arguments{
-\item{object}{Un objet de classe \code{prefmax_cluster}.}
+\item{object}{Un objet de classe \code{prefmax_cluster}\link{cite: 7}.}
 
-\item{...}{Arguments supplémentaires.}
+\item{...}{Arguments supplémentaires\link{cite: 7}.}
 }
 \value{
-Data.frame avec ANOVA et optima moyens par cluster.
+Data.frame avec ANOVA et optima moyens par cluster\link{cite: 7}.
 }
 \description{
 Caractérisation des clusters de consommateurs par ANOVA pondérée

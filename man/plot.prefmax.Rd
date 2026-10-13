@@ -10,7 +10,9 @@
   scale_desc = 1,
   cluster = NULL,
   title = "PrefMaX Biplot",
-  label_size = 3.5,
+  label_size = 5,
+  consumer_size = 3.5,
+  text_size = 1,
   min_r2 = NULL,
   label_consumers = TRUE,
   consumer_alpha = 0.6,
@@ -19,30 +21,34 @@
 )
 }
 \arguments{
-\item{x}{Un objet de classe \code{prefmax}.}
+\item{x}{Un objet de classe \code{prefmax}\link{cite: 7}.}
 
-\item{axes}{Un vecteur de deux entiers indiquant les axes de l'ACP à afficher (défaut c(1, 2)).}
+\item{axes}{Un vecteur de deux entiers indiquant les axes de l'ACP à afficher (défaut c(1, 2))\link{cite: 7}.}
 
-\item{scale_desc}{Facteur de dilatation pour les coordonnées des descripteurs (défaut 1).}
+\item{scale_desc}{Facteur de dilatation pour les coordonnées des descripteurs (défaut 1)\link{cite: 7}.}
 
-\item{cluster}{Objet de classe \code{prefmax_cluster}. Si NULL, affichage standard.}
+\item{cluster}{Objet de classe \code{prefmax_cluster}. Si NULL, affichage standard\link{cite: 7}.}
 
-\item{title}{Le titre du graphique.}
+\item{title}{Le titre du graphique\link{cite: 7}.}
 
-\item{label_size}{Taille de la police pour les étiquettes (défaut 3.5).}
+\item{label_size}{Taille de la police pour les étiquettes produits et descripteurs (défaut 5)\link{cite: 7}.}
 
-\item{min_r2}{Seuil minimal de R2 pour afficher les flèches des descripteurs (NULL pour tous).}
+\item{consumer_size}{Taille du symbole point pour les consommateurs (défaut 3.5).}
 
-\item{label_consumers}{Logique. Si FALSE, n'affiche que les points consommateurs sans numéros.}
+\item{text_size}{Coefficient multiplicateur de taille pour le titre, les axes et la légende (défaut 1).}
 
-\item{consumer_alpha}{Transparence des points consommateurs (défaut 0.6).}
+\item{min_r2}{Seuil minimal de R2 pour afficher les flèches des descripteurs (NULL pour tous)\link{cite: 7}.}
 
-\item{max.overlaps}{Nombre maximal de chevauchements pour ggrepel (défaut Inf).}
+\item{label_consumers}{Logique. Si FALSE, n'affiche que les points consommateurs sans numéros\link{cite: 7}.}
 
-\item{...}{Arguments supplémentaires.}
+\item{consumer_alpha}{Transparence des points consommateurs (défaut 0.6)\link{cite: 7}.}
+
+\item{max.overlaps}{Nombre maximal de chevauchements pour ggrepel (défaut Inf)\link{cite: 7}.}
+
+\item{...}{Arguments supplémentaires\link{cite: 7}.}
 }
 \value{
-Un objet \code{ggplot} représentant le biplot PrefMaX.
+Un objet \code{ggplot} représentant le biplot PrefMaX\link{cite: 7}.
 }
 \description{
 Représentation graphique Biplot de la méthode PrefMaX

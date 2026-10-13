@@ -3,12 +3,12 @@
 # ==============================================================================
 
 #' Calcul de la méthode PrefMaX
-#' @param Y Matrice ou data.frame (n x p) des notes hédoniques (n produits en lignes, p consommateurs en colonnes).
-#' @param X Matrice ou data.frame (n x q) des moyennes des descripteurs sensoriels (n produits en lignes, q descripteurs en colonnes).
-#' @param scale.unit Logique. Si TRUE, l'ACP est normée. Si FALSE (défaut), l'ACP est non normée.
-#' @param ncp Nombre de dimensions conservées dans l'ACP (défaut 5).
+#' @param Y Matrice ou data.frame (n x p) des notes hédoniques (n produits en lignes, p consommateurs en colonnes)[cite: 7].
+#' @param X Matrice ou data.frame (n x q) des moyennes des descripteurs sensoriels (n produits en lignes, q descripteurs en colonnes)[cite: 7].
+#' @param scale.unit Logique. Si TRUE, l'ACP est normée. Si FALSE (défaut), l'ACP est non normée[cite: 7].
+#' @param ncp Nombre de dimensions conservées dans l'ACP (défaut 5)[cite: 7].
 #'
-#' @return Un objet de classe \code{prefmax} contenant une liste avec Y, X, R, XOPT, bounds, weights, et pca.
+#' @return Un objet de classe \code{prefmax} contenant une liste avec Y, X, R, XOPT, bounds, weights, et pca[cite: 7].
 #' @export
 prefmax <- function(Y, X, scale.unit = FALSE, ncp = 5) {
   Y <- as.matrix(Y)
@@ -18,7 +18,6 @@ prefmax <- function(Y, X, scale.unit = FALSE, ncp = 5) {
     stop("Y et X doivent avoir le même nombre de lignes (produits).")
   }
 
-  # Alignement automatique des produits par rownames si présents
   if (!is.null(rownames(Y)) && !is.null(rownames(X))) {
     common_prods <- intersect(rownames(X), rownames(Y))
     if (length(common_prods) != nrow(X)) {
@@ -109,10 +108,10 @@ prefmax <- function(Y, X, scale.unit = FALSE, ncp = 5) {
 
 #' Graphique de l'éboulis des valeurs propres (Scree Plot) pour PrefMaX
 #'
-#' @param x Un objet de classe \code{prefmax}.
-#' @param title Titre du graphique.
+#' @param x Un objet de classe \code{prefmax}[cite: 7].
+#' @param title Titre du graphique[cite: 7].
 #'
-#' @return Un objet \code{ggplot} et affiche le tableau dans la console.
+#' @return Un objet \code{ggplot} et affiche le tableau dans la console[cite: 7].
 #' @export
 screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
   if (!inherits(x, "prefmax")) {
@@ -192,26 +191,29 @@ screeplot_prefmax <- function(x, title = "PrefMaX - Scree Plot (Eigenvalues)") {
 
 #' Représentation graphique Biplot de la méthode PrefMaX
 #'
-#' @param x Un objet de classe \code{prefmax}.
-#' @param axes Un vecteur de deux entiers indiquant les axes de l'ACP à afficher (défaut c(1, 2)).
-#' @param scale_desc Facteur de dilatation pour les coordonnées des descripteurs (défaut 1).
-#' @param cluster Objet de classe \code{prefmax_cluster}. Si NULL, affichage standard.
-#' @param title Le titre du graphique.
-#' @param label_size Taille de la police pour les étiquettes (défaut 3.5).
-#' @param min_r2 Seuil minimal de R2 pour afficher les flèches des descripteurs (NULL pour tous).
-#' @param label_consumers Logique. Si FALSE, n'affiche que les points consommateurs sans numéros.
-#' @param consumer_alpha Transparence des points consommateurs (défaut 0.6).
-#' @param max.overlaps Nombre maximal de chevauchements pour ggrepel (défaut Inf).
-#' @param ... Arguments supplémentaires.
+#' @param x Un objet de classe \code{prefmax}[cite: 7].
+#' @param axes Un vecteur de deux entiers indiquant les axes de l'ACP à afficher (défaut c(1, 2))[cite: 7].
+#' @param scale_desc Facteur de dilatation pour les coordonnées des descripteurs (défaut 1)[cite: 7].
+#' @param cluster Objet de classe \code{prefmax_cluster}. Si NULL, affichage standard[cite: 7].
+#' @param title Le titre du graphique[cite: 7].
+#' @param label_size Taille de la police pour les étiquettes produits et descripteurs (défaut 5)[cite: 7].
+#' @param consumer_size Taille du symbole point pour les consommateurs (défaut 3.5).
+#' @param text_size Coefficient multiplicateur de taille pour le titre, les axes et la légende (défaut 1).
+#' @param min_r2 Seuil minimal de R2 pour afficher les flèches des descripteurs (NULL pour tous)[cite: 7].
+#' @param label_consumers Logique. Si FALSE, n'affiche que les points consommateurs sans numéros[cite: 7].
+#' @param consumer_alpha Transparence des points consommateurs (défaut 0.6)[cite: 7].
+#' @param max.overlaps Nombre maximal de chevauchements pour ggrepel (défaut Inf)[cite: 7].
+#' @param ... Arguments supplémentaires[cite: 7].
 #'
-#' @return Un objet \code{ggplot} représentant le biplot PrefMaX.
+#' @return Un objet \code{ggplot} représentant le biplot PrefMaX[cite: 7].
 #' @export
-
 plot.prefmax <- function(x, axes = c(1, 2),
                          scale_desc = 1,
                          cluster = NULL,
                          title = "PrefMaX Biplot",
-                         label_size = 3.5,
+                         label_size = 5,
+                         consumer_size = 3.5,
+                         text_size = 1,
                          min_r2 = NULL,
                          label_consumers = TRUE,
                          consumer_alpha = 0.6,
@@ -323,12 +325,12 @@ plot.prefmax <- function(x, axes = c(1, 2),
     legend_labels <- NULL
   }
 
-  # --- 6. Cadrage strict au plus près des points (grille carrée, pas = 1) ---
+  # --- 6. Cadrage strict au plus près des points ---
   all_x <- c(cons_coords$Dim1, desc_coords$Dim1, prod_coords$Dim1)
   all_y <- c(cons_coords$Dim2, desc_coords$Dim2, prod_coords$Dim2)
 
   grid_step <- 1
-  pad <- 0.15 # Marge minimale autour des points extrêmes
+  pad <- 0.15
 
   x_min <- min(all_x, na.rm = TRUE) - pad
   x_max <- max(all_x, na.rm = TRUE) + pad
@@ -345,8 +347,9 @@ plot.prefmax <- function(x, axes = c(1, 2),
   p <- ggplot2::ggplot() +
     ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
     ggplot2::geom_vline(xintercept = 0, linetype = "dashed", color = "gray60", linewidth = 0.4) +
+    # Consommateurs : Prise en compte de consumer_size
     ggplot2::geom_point(data = cons_coords, ggplot2::aes(x = Dim1, y = Dim2, color = Type),
-                        alpha = consumer_alpha, size = 2) +
+                        alpha = consumer_alpha, size = consumer_size) +
     ggplot2::geom_segment(data = desc_coords, ggplot2::aes(x = 0, y = 0, xend = Dim1, yend = Dim2, color = Type),
                           arrow = ggplot2::arrow(length = ggplot2::unit(0.2, "cm")), linewidth = 0.7) +
     ggplot2::geom_point(data = prod_coords, ggplot2::aes(x = Dim1, y = Dim2, color = Type),
@@ -392,6 +395,7 @@ plot.prefmax <- function(x, axes = c(1, 2),
     }
   }
 
+  # --- Application du coefficient multiplicateur text_size aux éléments du thème ---
   p <- p +
     ggplot2::scale_color_manual(values = color_palette, labels = legend_labels, name = NULL) +
     ggplot2::guides(color = ggplot2::guide_legend(nrow = 1, byrow = TRUE)) +
@@ -406,10 +410,15 @@ plot.prefmax <- function(x, axes = c(1, 2),
     ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
-      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14),
+      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold", size = 14 * text_size),
+      axis.title.x = ggplot2::element_text(size = 11 * text_size),
+      axis.title.y = ggplot2::element_text(size = 11 * text_size),
+      axis.text.x  = ggplot2::element_text(size = 9 * text_size),
+      axis.text.y  = ggplot2::element_text(size = 9 * text_size),
+      legend.text  = ggplot2::element_text(size = 10 * text_size),
       legend.position = "bottom",
       legend.box = "horizontal",
-      plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9, color = "gray30"),
+      plot.caption = ggplot2::element_text(hjust = 1, face = "italic", size = 9 * text_size, color = "gray30"),
       panel.grid.major = ggplot2::element_line(color = "gray90", linewidth = 0.3),
       panel.grid.minor = ggplot2::element_blank(),
       panel.border = ggplot2::element_rect(color = "gray80", fill = NA, linewidth = 0.5),
@@ -419,18 +428,19 @@ plot.prefmax <- function(x, axes = c(1, 2),
 
   return(p)
 }
+
 # ==============================================================================
 # 4. Classification des consommateurs dans l'espace PrefMaX
 # ==============================================================================
 
 #' Classification des consommateurs dans l'espace PrefMaX
 #'
-#' @param x Un objet de classe \code{prefmax}.
-#' @param ncp Nombre de dimensions de l'ACP à prendre en compte (défaut 2).
-#' @param nb.clust Nombre de clusters souhaité. Si NULL, déterminé par silhouette.
-#' @param max.clust Nombre maximal de clusters à tester (défaut 6).
+#' @param x Un objet de classe \code{prefmax}[cite: 7].
+#' @param ncp Nombre de dimensions de l'ACP à prendre en compte (défaut 2)[cite: 7].
+#' @param nb.clust Nombre de clusters souhaité. Si NULL, déterminé par silhouette[cite: 7].
+#' @param max.clust Nombre maximal de clusters à tester (défaut 6)[cite: 7].
 #'
-#' @return Un objet de classe \code{prefmax_cluster}.
+#' @return Un objet de classe \code{prefmax_cluster}[cite: 7].
 #' @export
 prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
   if (!inherits(x, "prefmax")) {
@@ -544,10 +554,10 @@ prefmax_cluster <- function(x, ncp = 2, nb.clust = NULL, max.clust = 6) {
 
 #' Caractérisation des clusters de consommateurs par ANOVA pondérée
 #'
-#' @param object Un objet de classe \code{prefmax_cluster}.
-#' @param ... Arguments supplémentaires.
+#' @param object Un objet de classe \code{prefmax_cluster}[cite: 7].
+#' @param ... Arguments supplémentaires[cite: 7].
 #'
-#' @return Data.frame avec ANOVA et optima moyens par cluster.
+#' @return Data.frame avec ANOVA et optima moyens par cluster[cite: 7].
 #' @export
 summary.prefmax_cluster <- function(object, ...) {
   if (!inherits(object, "prefmax_cluster")) {
@@ -625,26 +635,29 @@ summary.prefmax_cluster <- function(object, ...) {
 
 #' Key-in-hand pipeline for the PrefMaX method
 #'
-#' @param path Directory containing the input Excel data file.
-#' @param file Excel file name.
-#' @param ShortID Identifier string for naming exported output files.
-#' @param sheet_hedo Sheet name or index for liking data (default 1).
-#' @param sheet_qda Sheet name or index for QDA data (default 2).
-#' @param scale.unit Logical. If TRUE, standardized PCA. If FALSE (default), unstandardized PCA.
-#' @param ncp Number of dimensions to retain for PCA and clustering (default 2).
-#' @param nb.clust Number of clusters (if NULL, auto silhouette; if 1, no clustering).
-#' @param scale_desc Scaling factor for attribute arrows (default 1).
-#' @param min_r2 Minimum R2 threshold for attribute vectors display (default NULL).
-#' @param label_consumers Logical. If NULL, auto-disabled when N > 100 consumers.
-#' @param consumer_alpha Alpha transparency for consumer points (default 0.6).
-#' @param title_standard Base title for standard biplot.
-#' @param title_cluster Base title for clustered biplot.
-#' @param res_dpi Resolution of saved TIFF images (default 300 DPI).
-#' @param plot_width Output TIFF plot width in inches (default 12).
-#' @param plot_height Output TIFF plot height in inches (default 8.5).
-#' @param output_dir Directory where output files will be saved. Default is current working directory \code{getwd()}.
+#' @param path Directory containing the input Excel data file[cite: 7].
+#' @param file Excel file name[cite: 7].
+#' @param ShortID Identifier string for naming exported output files[cite: 7].
+#' @param sheet_hedo Sheet name or index for liking data (default 1)[cite: 7].
+#' @param sheet_qda Sheet name or index for QDA data (default 2)[cite: 7].
+#' @param scale.unit Logical. If TRUE, standardized PCA. If FALSE (default), unstandardized PCA[cite: 7].
+#' @param ncp Number of dimensions to retain for PCA and clustering (default 2)[cite: 7].
+#' @param nb.clust Number of clusters (if NULL, auto silhouette; if 1, no clustering)[cite: 7].
+#' @param scale_desc Scaling factor for attribute arrows (default 1)[cite: 7].
+#' @param label_size Font size for biplot labels (default 5)[cite: 7].
+#' @param consumer_size Size of consumer points (default 3.5).
+#' @param text_size Multiplier factor for title, axis labels, legend and caption text sizes (default 1).
+#' @param min_r2 Minimum R2 threshold for attribute vectors display (default NULL)[cite: 7].
+#' @param label_consumers Logical. If NULL, auto-disabled when N > 100 consumers[cite: 7].
+#' @param consumer_alpha Alpha transparency for consumer points (default 0.6)[cite: 7].
+#' @param title_standard Base title for standard biplot[cite: 7].
+#' @param title_cluster Base title for clustered biplot[cite: 7].
+#' @param res_dpi Resolution of saved TIFF images (default 300 DPI)[cite: 7].
+#' @param plot_width Output TIFF plot width in inches (default 12)[cite: 7].
+#' @param plot_height Output TIFF plot height in inches (default 8.5)[cite: 7].
+#' @param output_dir Directory where output files will be saved. Default is current working directory \code{getwd()}[cite: 7].
 #'
-#' @return An object of class \code{prefmax_pipeline}.
+#' @return An object of class \code{prefmax_pipeline}[cite: 7].
 #' @export
 run_prefmax <- function(path,
                         file,
@@ -655,6 +668,9 @@ run_prefmax <- function(path,
                         ncp = 2,
                         nb.clust = NULL,
                         scale_desc = 1,
+                        label_size = 5,
+                        consumer_size = 3.5,
+                        text_size = 1,
                         min_r2 = NULL,
                         label_consumers = NULL,
                         consumer_alpha = 0.6,
@@ -825,12 +841,14 @@ run_prefmax <- function(path,
     if (is.null(res_clust)) {
       t_title <- paste0(title_standard, " (Axes ", i, "-", i + 1, ")")
       p_biplot <- plot(res_pref, axes = ax_pair, scale_desc = scale_desc, title = t_title,
+                       label_size = label_size, consumer_size = consumer_size, text_size = text_size,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
 
       plots_standard_list[[pair_name]] <- p_biplot
     } else {
       t_title <- paste0(title_cluster, " (Axes ", i, "-", i + 1, ")")
       p_biplot <- plot(res_pref, axes = ax_pair, cluster = res_clust, scale_desc = scale_desc, title = t_title,
+                       label_size = label_size, consumer_size = consumer_size, text_size = text_size,
                        min_r2 = min_r2, label_consumers = label_consumers, consumer_alpha = consumer_alpha)
 
       plots_cluster_list[[pair_name]] <- p_biplot

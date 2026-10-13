@@ -7,16 +7,16 @@
 prefmax(Y, X, scale.unit = FALSE, ncp = 5)
 }
 \arguments{
-\item{Y}{Matrice ou data.frame (n x p) des notes hédoniques (n produits en lignes, p consommateurs en colonnes).}
+\item{Y}{Matrice ou data.frame (n x p) des notes hédoniques (n produits en lignes, p consommateurs en colonnes)\link{cite: 7}.}
 
-\item{X}{Matrice ou data.frame (n x q) des moyennes des descripteurs sensoriels (n produits en lignes, q descripteurs en colonnes).}
+\item{X}{Matrice ou data.frame (n x q) des moyennes des descripteurs sensoriels (n produits en lignes, q descripteurs en colonnes)\link{cite: 7}.}
 
-\item{scale.unit}{Logique. Si TRUE, l'ACP est normée. Si FALSE (défaut), l'ACP est non normée.}
+\item{scale.unit}{Logique. Si TRUE, l'ACP est normée. Si FALSE (défaut), l'ACP est non normée\link{cite: 7}.}
 
-\item{ncp}{Nombre de dimensions conservées dans l'ACP (défaut 5).}
+\item{ncp}{Nombre de dimensions conservées dans l'ACP (défaut 5)\link{cite: 7}.}
 }
 \value{
-Un objet de classe \code{prefmax} contenant une liste avec Y, X, R, XOPT, bounds, weights, et pca.
+Un objet de classe \code{prefmax} contenant une liste avec Y, X, R, XOPT, bounds, weights, et pca\link{cite: 7}.
 }
 \description{
 Calcul de la méthode PrefMaX

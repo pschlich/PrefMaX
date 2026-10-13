@@ -14,6 +14,9 @@ run_prefmax(
   ncp = 2,
   nb.clust = NULL,
   scale_desc = 1,
+  label_size = 5,
+  consumer_size = 3.5,
+  text_size = 1,
   min_r2 = NULL,
   label_consumers = NULL,
   consumer_alpha = 0.6,
@@ -26,44 +29,50 @@ run_prefmax(
 )
 }
 \arguments{
-\item{path}{Directory containing the input Excel data file.}
+\item{path}{Directory containing the input Excel data file\link{cite: 7}.}
 
-\item{file}{Excel file name.}
+\item{file}{Excel file name\link{cite: 7}.}
 
-\item{ShortID}{Identifier string for naming exported output files.}
+\item{ShortID}{Identifier string for naming exported output files\link{cite: 7}.}
 
-\item{sheet_hedo}{Sheet name or index for liking data (default 1).}
+\item{sheet_hedo}{Sheet name or index for liking data (default 1)\link{cite: 7}.}
 
-\item{sheet_qda}{Sheet name or index for QDA data (default 2).}
+\item{sheet_qda}{Sheet name or index for QDA data (default 2)\link{cite: 7}.}
 
-\item{scale.unit}{Logical. If TRUE, standardized PCA. If FALSE (default), unstandardized PCA.}
+\item{scale.unit}{Logical. If TRUE, standardized PCA. If FALSE (default), unstandardized PCA\link{cite: 7}.}
 
-\item{ncp}{Number of dimensions to retain for PCA and clustering (default 2).}
+\item{ncp}{Number of dimensions to retain for PCA and clustering (default 2)\link{cite: 7}.}
 
-\item{nb.clust}{Number of clusters (if NULL, auto silhouette; if 1, no clustering).}
+\item{nb.clust}{Number of clusters (if NULL, auto silhouette; if 1, no clustering)\link{cite: 7}.}
 
-\item{scale_desc}{Scaling factor for attribute arrows (default 1).}
+\item{scale_desc}{Scaling factor for attribute arrows (default 1)\link{cite: 7}.}
 
-\item{min_r2}{Minimum R2 threshold for attribute vectors display (default NULL).}
+\item{label_size}{Font size for biplot labels (default 5)\link{cite: 7}.}
 
-\item{label_consumers}{Logical. If NULL, auto-disabled when N > 100 consumers.}
+\item{consumer_size}{Size of consumer points (default 3.5).}
 
-\item{consumer_alpha}{Alpha transparency for consumer points (default 0.6).}
+\item{text_size}{Multiplier factor for title, axis labels, legend and caption text sizes (default 1).}
 
-\item{title_standard}{Base title for standard biplot.}
+\item{min_r2}{Minimum R2 threshold for attribute vectors display (default NULL)\link{cite: 7}.}
 
-\item{title_cluster}{Base title for clustered biplot.}
+\item{label_consumers}{Logical. If NULL, auto-disabled when N > 100 consumers\link{cite: 7}.}
 
-\item{res_dpi}{Resolution of saved TIFF images (default 300 DPI).}
+\item{consumer_alpha}{Alpha transparency for consumer points (default 0.6)\link{cite: 7}.}
 
-\item{plot_width}{Output TIFF plot width in inches (default 12).}
+\item{title_standard}{Base title for standard biplot\link{cite: 7}.}
 
-\item{plot_height}{Output TIFF plot height in inches (default 8.5).}
+\item{title_cluster}{Base title for clustered biplot\link{cite: 7}.}
 
-\item{output_dir}{Directory where output files will be saved. Default is current working directory \code{getwd()}.}
+\item{res_dpi}{Resolution of saved TIFF images (default 300 DPI)\link{cite: 7}.}
+
+\item{plot_width}{Output TIFF plot width in inches (default 12)\link{cite: 7}.}
+
+\item{plot_height}{Output TIFF plot height in inches (default 8.5)\link{cite: 7}.}
+
+\item{output_dir}{Directory where output files will be saved. Default is current working directory \code{getwd()}\link{cite: 7}.}
 }
 \value{
-An object of class \code{prefmax_pipeline}.
+An object of class \code{prefmax_pipeline}\link{cite: 7}.
 }
 \description{
 Key-in-hand pipeline for the PrefMaX method

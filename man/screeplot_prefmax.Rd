@@ -7,12 +7,12 @@
 screeplot_prefmax(x, title = "PrefMaX - Scree Plot (Eigenvalues)")
 }
 \arguments{
-\item{x}{Un objet de classe \code{prefmax}.}
+\item{x}{Un objet de classe \code{prefmax}\link{cite: 7}.}
 
-\item{title}{Titre du graphique.}
+\item{title}{Titre du graphique\link{cite: 7}.}
 }
 \value{
-Un objet \code{ggplot} et affiche le tableau dans la console.
+Un objet \code{ggplot} et affiche le tableau dans la console\link{cite: 7}.
 }
 \description{
 Graphique de l'éboulis des valeurs propres (Scree Plot) pour PrefMaX

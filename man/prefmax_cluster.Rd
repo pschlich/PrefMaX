@@ -7,16 +7,16 @@
 prefmax_cluster(x, ncp = 2, nb.clust = NULL, max.clust = 6)
 }
 \arguments{
-\item{x}{Un objet de classe \code{prefmax}.}
+\item{x}{Un objet de classe \code{prefmax}\link{cite: 7}.}
 
-\item{ncp}{Nombre de dimensions de l'ACP à prendre en compte (défaut 2).}
+\item{ncp}{Nombre de dimensions de l'ACP à prendre en compte (défaut 2)\link{cite: 7}.}
 
-\item{nb.clust}{Nombre de clusters souhaité. Si NULL, déterminé par silhouette.}
+\item{nb.clust}{Nombre de clusters souhaité. Si NULL, déterminé par silhouette\link{cite: 7}.}
 
-\item{max.clust}{Nombre maximal de clusters à tester (défaut 6).}
+\item{max.clust}{Nombre maximal de clusters à tester (défaut 6)\link{cite: 7}.}
 }
 \value{
-Un objet de classe \code{prefmax_cluster}.
+Un objet de classe \code{prefmax_cluster}\link{cite: 7}.
 }
 \description{
 Classification des consommateurs dans l'espace PrefMaX
